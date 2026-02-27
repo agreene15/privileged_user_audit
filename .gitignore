@@ -1,0 +1,15 @@
+# Credential cache (contains your UPN)
+.auth_cache.json
+
+# Output reports (contain tenant-specific data)
+*.csv
+*.html
+
+# Claude Code internal files
+.claude/
+CLAUDE.md
+
+# Scratch/temp files
+$null
+dd
+del.ps1
