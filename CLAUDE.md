@@ -14,6 +14,8 @@ Three PowerShell 7 (`pwsh`) scripts for security auditing Microsoft 365 / Entra 
 
 ## Running the Scripts
 
+### macOS / Linux
+
 ```powershell
 # Default 24-hour window
 pwsh ./Get-PrivilegedActivityReport.ps1
@@ -28,7 +30,7 @@ pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7
 pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 30
 
 # Custom output directory
-pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "C:\Reports"
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "/tmp/reports"
 
 # Force browser re-auth (bypass .auth_cache.json)
 pwsh ./Get-PrivilegedActivityReport.ps1 -ForceReauth
@@ -39,6 +41,47 @@ pwsh ./Get-CASessionPolicy.ps1
 # SharePoint conversion
 pwsh ./convert-for-sharepoint.ps1 -InputFile report.html -OutputFile report_sharepoint.html
 ```
+
+### Windows (PowerShell 7 / pwsh)
+
+First-time setup — set execution policy if scripts are blocked:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Then run from a `pwsh` prompt (use `.\` prefix, standard on Windows):
+
+```powershell
+# Default 24-hour window
+.\Get-PrivilegedActivityReport.ps1
+
+# Last 24 hours (explicit)
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 1
+
+# Last 7 days
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 7
+
+# Last 30 days
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 30
+
+# Custom output directory
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "C:\Reports"
+
+# Force browser re-auth (bypass .auth_cache.json)
+.\Get-PrivilegedActivityReport.ps1 -ForceReauth
+
+# CA session audit (no time range — point-in-time)
+.\Get-CASessionPolicy.ps1
+
+# SharePoint conversion
+.\convert-for-sharepoint.ps1 -InputFile report.html -OutputFile report_sharepoint.html
+```
+
+**Windows-specific behavior differences:**
+- `Get-TenantAllowBlockListItems` (TABL) works correctly on Windows — live TABL state is included in addition to UAL change events
+- `Search-UnifiedAuditLog` runs significantly faster on Windows than on macOS
+- The HTML report opens automatically in the default browser after generation
 
 Modules auto-install on first run. Output files land in `$PSScriptRoot` (the script directory).
 
