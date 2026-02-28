@@ -7,7 +7,6 @@
 
 # Claude Code internal files
 .claude/
-CLAUDE.md
 
 # Scratch/temp files
 $null
