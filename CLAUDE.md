@@ -18,8 +18,17 @@ Three PowerShell 7 (`pwsh`) scripts for security auditing Microsoft 365 / Entra 
 # Default 24-hour window
 pwsh ./Get-PrivilegedActivityReport.ps1
 
-# Custom range
+# Last 24 hours (explicit)
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 1
+
+# Last 7 days
 pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7
+
+# Last 30 days
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 30
+
+# Custom output directory
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "C:\Reports"
 
 # Force browser re-auth (bypass .auth_cache.json)
 pwsh ./Get-PrivilegedActivityReport.ps1 -ForceReauth
