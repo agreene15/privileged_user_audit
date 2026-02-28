@@ -48,19 +48,68 @@ cd privileged_user_audit
 
 ### Privileged Activity Report
 
+#### macOS / Linux
+
 ```powershell
 # Default: last 24 hours
 pwsh ./Get-PrivilegedActivityReport.ps1
 
-# Custom time range (e.g., last 7 days)
+# Last 24 hours (explicit)
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 1
+
+# Last 7 days
 pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7
+
+# Last 30 days
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 30
 
 # Include Azure subscription activity logs
 pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 30 -IncludeAzure
 
+# Custom output directory
+pwsh ./Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "/tmp/reports"
+
 # Force re-authentication (bypass cached token)
 pwsh ./Get-PrivilegedActivityReport.ps1 -ForceReauth
 ```
+
+#### Windows (PowerShell 7 / pwsh)
+
+First-time setup — set execution policy if scripts are blocked:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Then run from a `pwsh` prompt (use `.\` prefix, standard on Windows):
+
+```powershell
+# Default: last 24 hours
+.\Get-PrivilegedActivityReport.ps1
+
+# Last 24 hours (explicit)
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 1
+
+# Last 7 days
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 7
+
+# Last 30 days
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 30
+
+# Include Azure subscription activity logs
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 30 -IncludeAzure
+
+# Custom output directory
+.\Get-PrivilegedActivityReport.ps1 -DaysBack 7 -OutputPath "C:\Reports"
+
+# Force re-authentication (bypass cached token)
+.\Get-PrivilegedActivityReport.ps1 -ForceReauth
+```
+
+**Windows-specific behavior differences:**
+- `Get-TenantAllowBlockListItems` (TABL) works correctly on Windows — live TABL state is included in addition to UAL change events
+- `Search-UnifiedAuditLog` runs significantly faster on Windows than on macOS
+- The HTML report opens automatically in the default browser after generation
 
 On first run, a browser window will open for interactive authentication. Your UPN is cached locally in `.auth_cache.json` (gitignored) for up to 7 days to speed up subsequent runs.
 
@@ -78,11 +127,20 @@ On first run, a browser window will open for interactive authentication. Your UP
 
 Point-in-time audit of Conditional Access session controls and token lifetime policies.
 
+**macOS / Linux:**
 ```powershell
 pwsh ./Get-CASessionPolicy.ps1
 
 # Force re-authentication
 pwsh ./Get-CASessionPolicy.ps1 -ForceReauth
+```
+
+**Windows:**
+```powershell
+.\Get-CASessionPolicy.ps1
+
+# Force re-authentication
+.\Get-CASessionPolicy.ps1 -ForceReauth
 ```
 
 **What it reports:**
@@ -98,8 +156,14 @@ pwsh ./Get-CASessionPolicy.ps1 -ForceReauth
 
 The default HTML report uses `<details>` elements for collapsible sections, which SharePoint strips. Convert it for SharePoint:
 
+**macOS / Linux:**
 ```powershell
 pwsh ./convert-for-sharepoint.ps1 -InputFile PrivilegedActivity_Report_<timestamp>.html -OutputFile report_sharepoint.html
+```
+
+**Windows:**
+```powershell
+.\convert-for-sharepoint.ps1 -InputFile PrivilegedActivity_Report_<timestamp>.html -OutputFile report_sharepoint.html
 ```
 
 ---
@@ -156,8 +220,8 @@ Get-AdminAuditLogConfig | Select UnifiedAuditLogIngestionEnabled  # Should be Tr
 
 ## Known Limitations
 
-- **Tenant Allow/Block List**: Full retrieval requires Windows PowerShell 5.1; UAL captures changes on all platforms
-- **Search-UnifiedAuditLog on macOS**: Available via Exchange Online connection but can be slow; use [Microsoft Purview Audit](https://compliance.microsoft.com) for ad-hoc searches
+- **Tenant Allow/Block List**: `Get-TenantAllowBlockListItems` works on Windows; broken in pwsh on macOS — UAL captures changes on all platforms
+- **Search-UnifiedAuditLog on macOS**: Runs significantly slower than on Windows (~12 min for a 1-day query); use [Microsoft Purview Audit](https://compliance.microsoft.com) for ad-hoc searches if needed
 - **Exchange connection**: Can take 20+ minutes on first run; subsequent runs use cached MSAL tokens
 - **PIM eligible roles**: Requires Azure AD Premium P2 / Entra ID Governance license
 
